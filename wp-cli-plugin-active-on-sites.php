@@ -91,6 +91,8 @@ function reset_display_errors() {
  * Check for errors, unmet requirements, etc
  *
  * @param string $target_plugin
+ *
+ * @throws WP_CLI\ExitException
  */
 function pre_flight_checks( $target_plugin ) {
 	if ( ! is_multisite() ) {
@@ -171,10 +173,10 @@ function display_results( $target_plugin, $found_sites, $assoc_args ) {
 
 	if ( ! empty( $assoc_args['format'] ) && 'ids' === $assoc_args['format'] ) {
 		$ids       = wp_list_pluck( $found_sites, 'blog_id' );
-		$formatter = new Formatter( $assoc_args, null, 'site' );
+		$formatter = new WP_CLI\Formatter( $assoc_args, null, 'site' );
 		$formatter->display_items( $ids );
 	} else {
-		$formatter = new Formatter( $assoc_args, null, 'site' );
+		$formatter = new WP_CLI\Formatter( $assoc_args, null, 'site' );
 		$formatter->display_items( $found_sites );
 	}
 
