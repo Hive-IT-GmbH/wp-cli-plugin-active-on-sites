@@ -173,10 +173,10 @@ function display_results( $target_plugin, $found_sites, $assoc_args ) {
 
 	if ( ! empty( $assoc_args['format'] ) && 'ids' === $assoc_args['format'] ) {
 		$ids       = wp_list_pluck( $found_sites, 'blog_id' );
-		$formatter = new WP_CLI\Formatter( $assoc_args, null, 'site' );
+		$formatter = new WP_CLI\Formatter( $assoc_args );
 		$formatter->display_items( $ids );
 	} else {
-		$formatter = new WP_CLI\Formatter( $assoc_args, null, 'site' );
+		$formatter = new WP_CLI\Formatter( $assoc_args );
 		$formatter->display_items( $found_sites );
 	}
 
