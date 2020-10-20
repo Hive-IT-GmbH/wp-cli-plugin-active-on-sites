@@ -1,21 +1,15 @@
 <?php
 
 /*
-Plugin Name: WP-CLI Plugin Active on Sites
+Plugin Name: WP-CLI - Plugin Active on Sites
 Plugin URI:  https://github.com/iandunn/wp-cli-plugin-active-on-sites
 Description: A WP-CLI command to list all sites in a Multisite network that have activated a given plugin
 Version:     0.1
-Author:      Ian Dunn
+Author:      Ian Dunn, Jan Thiel
 Author URI:  http://iandunn.name
 License:     GPLv2
 */
 
-/*
- * TODO
- *
- * Write unit tests
- *
- */
 
 namespace WP_CLI\Plugin\Active_On_Sites;
 use WP_CLI;
@@ -71,11 +65,9 @@ function invoke( $args, $assoc_args ) {
 
 	list( $target_plugin ) = $args;
 
-	WP_CLI::line();
 	pre_flight_checks( $target_plugin );
 	$found_sites = find_sites_with_plugin( $target_plugin );
 
-	WP_CLI::line();
 	display_results( $target_plugin, $found_sites, $assoc_args );
 }
 
@@ -116,7 +108,7 @@ function pre_flight_checks( $target_plugin ) {
 
 	if ( in_array( $target_plugin, $network_activated_plugins, true ) ) {
 		WP_CLI::warning( "$target_plugin is network-activated." );
-		exit( 0 );
+		WP_CLI::halt(0);
 	}
 }
 
@@ -130,7 +122,6 @@ function pre_flight_checks( $target_plugin ) {
 function find_sites_with_plugin( $target_plugin ) {
 	$sites       = get_sites( array( 'number' => 10000 ) );
 	$found_sites = array();
-	$notify      = new \cli\progress\Bar( 'Checking sites', count( $sites ) );
 
 	foreach ( $sites as $site ) {
 		switch_to_blog( $site->blog_id );
@@ -139,17 +130,12 @@ function find_sites_with_plugin( $target_plugin ) {
 		if ( is_array( $active_plugins ) ) {
 			$active_plugins = array_map( 'dirname', $active_plugins );
 			if ( in_array( $target_plugin, $active_plugins, true ) ) {
-				$found_sites[] = array(
-					'blog_id' => $site->blog_id,
-					'url'     => trailingslashit( get_site_url( $blog->blog_id ) ),
-				);
+				$found_sites[] = $site;
 			}
 		}
 
 		restore_current_blog();
-		$notify->tick();
 	}
-	$notify->finish();
 
 	return $found_sites;
 }
@@ -168,13 +154,28 @@ function display_results( $target_plugin, $found_sites, $assoc_args ) {
 	}
 
 	if ( isset( $assoc_args['fields'] ) ) {
-		$assoc_args['fields'] = explode( ',', $assoc_args['fields'] );
-	} else {
-		$assoc_args['fields'] = array( 'blog_id', 'url' );
+		$assoc_args['fields'] = preg_split( '/,[ \t]*/', $assoc_args['fields'] );
 	}
 
-	WP_CLI::line( "Sites where $target_plugin is active:" );
+	$defaults   = [
+		'format' => 'table',
+		'fields' => [ 'blog_id', 'url' ],
+	];
+	$assoc_args = array_merge( $defaults, $assoc_args );
+	$site_cols = [ 'blog_id', 'last_updated', 'registered', 'site_id', 'domain', 'path', 'public', 'archived', 'mature', 'spam', 'deleted', 'lang_id' ];
+	foreach ( $site_cols as $col ) {
+		if ( isset( $assoc_args[ $col ] ) ) {
+			$where[ $col ] = $assoc_args[ $col ];
+		}
+	}
 
-	$formatter = new \WP_CLI\Formatter( $assoc_args );
-	$formatter->display_items( $found_sites );
+	if ( ! empty( $assoc_args['format'] ) && 'ids' === $assoc_args['format'] ) {
+		$ids       = wp_list_pluck( $found_sites, 'blog_id' );
+		$formatter = new Formatter( $assoc_args, null, 'site' );
+		$formatter->display_items( $ids );
+	} else {
+		$formatter = new Formatter( $assoc_args, null, 'site' );
+		$formatter->display_items( $found_sites );
+	}
+
 }
