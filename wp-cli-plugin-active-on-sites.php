@@ -132,6 +132,7 @@ function find_sites_with_plugin( $target_plugin ) {
 		if ( is_array( $active_plugins ) ) {
 			$active_plugins = array_map( 'dirname', $active_plugins );
 			if ( in_array( $target_plugin, $active_plugins, true ) ) {
+				$site->url = trailingslashit( get_site_url( $site->blog_id ) );
 				$found_sites[] = $site;
 			}
 		}
