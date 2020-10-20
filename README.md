@@ -1,11 +1,12 @@
-WP-CLI Plugin Active on Sites
+WP-CLI - Plugin Active on Sites
 ===============================
 
 A [WP-CLI](http://wp-cli.org/) command to list all sites in a Multisite network that have activated a given plugin.
+Based on [Ian Dunns great work](https://github.com/iandunn/wp-cli-plugin-active-on-sites).
 
 ## Installing
 
-`wp package install iandunn/wp-cli-plugin-active-on-sites`
+`wp package install hive-it-gmbh/wp-cli-plugin-active-on-sites`
 
 ## Usage
 
@@ -24,9 +25,6 @@ A [WP-CLI](http://wp-cli.org/) command to list all sites in a Multisite network 
 ```shell
 > wp plugin active-on-sites eu-cookie-law-widget
 
-Checking each site  100% [==================================================] 0:02 / 0:03
-
-Sites where eu-cookie-law-widget is active:
 +---------+----------------------------------------+
 | blog_id | url                                    |
 +---------+----------------------------------------+
